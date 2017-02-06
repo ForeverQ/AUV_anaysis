@@ -3,9 +3,9 @@ from itertools import groupby
 from os import listdir
 
 
-# These are the paths of data.
+# Here are the paths of data.
 # FILE_PATH_S stores the one-dimension data
-# FILE_PATH_M stores the mult-dimension data
+# FILE_PATH_M stores the mult-dimension data which are 'Acceleration.csv', 'AngularVelocity.csv' and 'AngularVelocity.csv'
 FILE_PATH_S = '/Users/ForeverQ/Programming/svn/hengqian/src/datas/data_1/'
 FILE_PATH_M = '/Users/ForeverQ/Programming/svn/hengqian/src/datas/data_1/mult_dm/'
 

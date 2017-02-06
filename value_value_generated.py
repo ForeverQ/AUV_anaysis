@@ -1,13 +1,15 @@
-
 import numpy as np
 
 def __f_3(t):
+    """func. of multiplication of exp and cos"""
     return np.exp(-t) * np.cos(2*np.pi*t), 'exp and cos'
 
 def __f_1(t):
+    """func. of exp"""
     return np.exp(t), 'exp'
 
 def __rec_f_0(t):
+    """func. of a rectangle"""
     y = []
     value = 1
     for item in t:
@@ -18,18 +20,23 @@ def __rec_f_0(t):
     return np.array(y), 'rectangle'
 
 def sin_f_0(t):
+    """func. of sin"""
     return np.sin(t), 'sin'
 
 def sin_f_1(t):
+    """func. of sin of 1 period"""
     return np.sin(t/(19/4)), 'sin (1T)'
 
 def cos_f_0(t):
+    """func. of cos"""
     return np.cos(t), 'cos'
 
 def cos_f_1(t):
+    """func. of cos of 1 period"""
     return np.cos(t/(19/4)), 'cos (1T)'
 
 def tri_fSin_f_0(t):
+    """func. of a triangle correlated to sin"""
     y = []
     for item in t:
         item_m = (item-0.5*np.pi)/np.pi
@@ -42,6 +49,7 @@ def tri_fSin_f_0(t):
     return np.array(y), 'triangle for sin'
 
 def tri_fSin_f_1(t):
+    """func. of a triangle correlated to sin of 1 period"""
     y = []
     for item in (t/(19/4)):
         item_m = (item-0.5*np.pi)/np.pi
@@ -54,6 +62,7 @@ def tri_fSin_f_1(t):
     return np.array(y), 'triangle for sin (1T)'
 
 def tri_fCos_f_0(t):
+    """func. of a triangle correlated to cos"""
     y = []
     for item in t:
         item_m = (item)/np.pi
@@ -66,6 +75,7 @@ def tri_fCos_f_0(t):
     return np.array(y), 'triangle for cos'
 
 def tri_fCos_f_1(t):
+    """func. of a triangle correlated to cos of 1 period"""
     y = []
     for item in (t/(19/4)):
         item_m = (item)/np.pi
@@ -78,15 +88,19 @@ def tri_fCos_f_1(t):
     return np.array(y), 'triangle for cos (1T)'
 
 def constant_f_0(t):
+    """func. of a constant"""
     return np.linspace(1,1,len(t)), 'constant value of 1'
 
 def upSlopeLinear_f_0(t):
+    """func. of an up-slope linear"""
     return 2*t+3, 'up slope linear func'
 
 def downSlopeLinear_f_0(t):
+    """func. of a down-slope linear"""
     return -3*t-1, 'down slope linear func'
 
 def calculate_derivative_series(series_X, series_y):
+    """Calculates derivatives by definition"""
     series_X_d = []
     series_y_d = []
     for (index_X, item_X), (index_y, item_y) in zip(enumerate(series_X), enumerate(series_y)):
@@ -97,6 +111,7 @@ def calculate_derivative_series(series_X, series_y):
     return np.array(series_X_d), np.array(series_y_d)
 
 def draw_two(t, y_1, name_1, y_2, name_2):
+    """Draws two generated functions on one picture"""
     series_y_1_d, series_y_2_d = calculate_derivative_series(y_1, y_2)
     series_y_1_d_range = np.amax(series_y_1_d) - np.amin(series_y_1_d)
     series_y_1_d_max, series_y_1_d_min = (np.amax(series_y_1_d)+0.08*series_y_1_d_range,
@@ -112,8 +127,8 @@ def draw_two(t, y_1, name_1, y_2, name_2):
     y_2_range = np.amax(y_2) - np.amin(y_2)
     y_2_max, y_2_min = (np.amax(y_2)+0.08*y_2_range, np.amin(y_2)-0.08*y_2_range)
 
+    # Start drawing
     import matplotlib.pyplot as plt
-
     plt.figure(1, figsize=(8,8))
     plt.subplot(211)
     plt.title(name_1)
@@ -123,21 +138,7 @@ def draw_two(t, y_1, name_1, y_2, name_2):
     plt.title(name_2)
     plt.plot(t, y_2, color='blue', label='', linewidth=2)
     plt.axis([t_min, t_max, y_2_min, y_2_max])
-    # plt.savefig(name_1 + ' && ' + name_2 + '.png', dpi=200)
-    # plt.close()
 
-    # combinations of simple version
-    # plt.figure(2, figsize=(8,8))
-    # plt.subplot(211)
-    # plt.title(name_1 + '&' + name_2)
-    # plt.plot(y_1, y_2, color='orange', label='', linewidth=2)
-    # plt.axis([y_1_min, y_1_max, y_2_min, y_2_max])
-    # plt.subplot(212)
-    # plt.title('derivative of ' + name_1 + '&' + name_2)
-    # plt.plot(series_y_1_d, series_y_2_d, color='c', label='', linewidth=2)
-    # plt.axis([series_y_1_d_min, series_y_1_d_max,series_y_2_d_min, series_y_2_d_max])
-
-    # plt.figure(3, figsize=(16,9))
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16,9))
     cm = plt.cm.get_cmap('rainbow')
     z_3_1 = np.arange(1000)
@@ -157,6 +158,7 @@ def draw_two(t, y_1, name_1, y_2, name_2):
     plt.show()
 
 def generate_two_funcs(func_first, func_second):
+    """Uses designed functions to generate values"""
     t = np.linspace(0, 30, 1000)
     y_1, name_1 = func_first(t)
     y_2, name_2 = func_second(t)
