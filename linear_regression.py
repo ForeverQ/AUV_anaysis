@@ -1,4 +1,4 @@
-import pre_treat as p_t
+import pre_process as p_p
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 import numpy as np
@@ -76,8 +76,8 @@ def make_linear_fitting_pairs(dict_total, key_names):
             # first_name = ' Servo 4.Temperature.csv'
             # second_name = ' z (m/s/s).Acceleration.csv'
 
-            two_entity_list = p_t.merge(first_name, second_name, dict_total)
-            x_y_dict = p_t.make_data_pairs(two_entity_list)
+            two_entity_list = p_p.merge(first_name, second_name, dict_total)
+            x_y_dict = p_p.make_data_pairs(two_entity_list)
 
             # about pandas dataframe
             pd.set_option('precision',8)
@@ -195,7 +195,7 @@ def make_linear_fitting_one(dict_total, key_names):
 
 if __name__ == '__main__':
 
-    dict_total = p_t.make_total_dict()
+    dict_total = p_p.make_total_dict()
 
     # key_names in order by different types
     key_names_ordered = sorted(dict_total, key=lambda item: item[::-1])

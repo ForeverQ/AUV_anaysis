@@ -1,33 +1,16 @@
-import pre_treat as p_t
-import linear_regression as l_r
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn import linear_model
 import numpy as np
+import pre_process as p_p
+import linear_regression as l_r
+import util as t_l
 
-def calculate_ratio(a_standard_tv):
-    time_delt = a_standard_tv[-1][0] - a_standard_tv[0][0]
-    delt_string_list = list(str(int(time_delt)))
-    if delt_string_list[0]=='1':
-        return len(delt_string_list) - 1
-    else:
-        return len(delt_string_list)
-
-def my_derivative_poly(coef_):
-    coef = []
-    for i in range(1, len(coef_[0])):
-        coef.append(i*coef_[0][i])
-    return np.array(coef)
-
-def generate_polynomials(X, degree):
-    quad_feature = PolynomialFeatures(degree=degree)
-    X_quad = quad_feature.fit_transform(X)
-    return X_quad
 
 def draw_points_and_poly(key_name, X, y, reg_func, degree, count):
     import matplotlib.pyplot as plt
-    X_quad = generate_polynomials(X, degree)
+    X_quad = t_l.generate_polynomials(X, degree)
     plt.figure(figsize=(16,9))
     plt.xlabel('time')
     plt.ylabel(key_name)
@@ -52,37 +35,6 @@ def print_derivative_props(name, coef_d):
     print(coef_d)
     print()
 
-def calculate_extremum(X,y):
-    extremum_points = []
-    point_tuple_ppre = (*X[0], y[0])
-    point_tuple_pre = (*X[1], y[1])
-    for (comm_xx, yy) in zip(X[2:], y[2:]):
-        if (point_tuple_pre[1] > point_tuple_ppre[1]) and \
-                (point_tuple_pre[1] > yy):
-            extremum_points.append(point_tuple_pre+('maximum',))
-        elif (point_tuple_pre[1] < point_tuple_ppre[1]) and \
-                (point_tuple_pre[1] < yy):
-            extremum_points.append(point_tuple_pre+('minimum',))
-        point_tuple_ppre = point_tuple_pre
-        point_tuple_pre = (*comm_xx, yy)
-    return extremum_points
-
-def calculate_cross_zero(X, y):
-    cross_zero_points = []
-    point_delt_tuple_ppre = (*X[0], y[0], abs(y[0] - 0.0))
-    point_delt_tuple_pre = (*X[1], y[1], abs(y[1] - 0.0))
-    for (comm_xx, yy) in zip(X[2:], y[2:]):
-        delt_now = abs(yy-0.0)
-        if (point_delt_tuple_pre[2] < point_delt_tuple_ppre[2]) and \
-                (point_delt_tuple_pre[2] < delt_now):
-            if (point_delt_tuple_ppre[1]<0 and yy>0):
-                cross_zero_points.append(point_delt_tuple_pre+('minimum',))
-            elif (point_delt_tuple_ppre[1]>0 and yy<0):
-                cross_zero_points.append(point_delt_tuple_pre+('maximum',))
-        point_delt_tuple_ppre = point_delt_tuple_pre
-        point_delt_tuple_pre = (*comm_xx, yy, delt_now)
-    return cross_zero_points
-
 def draw_two_p_and_d(key_name_1, key_name_2, X_1, X_2, lin_reg_1, lin_reg_2,
                      coef_d_1, coef_d_2, degree, count, t_comps_ratio):
     import matplotlib.pyplot as plt
@@ -92,10 +44,10 @@ def draw_two_p_and_d(key_name_1, key_name_2, X_1, X_2, lin_reg_1, lin_reg_2,
     comm_right = X_1[-1] if X_1[-1]<X_2[-1] else X_2[-1]
     comm_X = np.linspace(comm_left,comm_right,(comm_right-comm_left)*(10**t_comps_ratio))
     comm_X = comm_X.reshape(comm_X.shape[0], 1)
-    comm_X_quad = generate_polynomials(comm_X, degree)
+    comm_X_quad = t_l.generate_polynomials(comm_X, degree)
 
     # Derivative of this function for display
-    comm_X_quad_d = generate_polynomials(comm_X, degree-1)
+    comm_X_quad_d = t_l.generate_polynomials(comm_X, degree-1)
 
     fig, axarr = plt.subplots(2, sharex=True, figsize=(16,9))
     # fig.tight_layout()
@@ -111,9 +63,9 @@ def draw_two_p_and_d(key_name_1, key_name_2, X_1, X_2, lin_reg_1, lin_reg_2,
     axarr[0].axis([comm_left,comm_right,picture_y_1_min,picture_y_1_max])
     axarr[0].plot(comm_X, y_dp_1, color='orange', label='degree '+str(degree), linewidth=3)
 
-    # find extremum
-    extremum_points = calculate_extremum(comm_X, y_dp_1)
-    for index, item in enumerate(extremum_points):
+    # find extreme
+    extreme_points = t_l.calculate_extreme(comm_X, y_dp_1)
+    for index, item in enumerate(extreme_points):
         if item[2]=='maximum':
             axarr[0].scatter([item[0],],[item[1],], 30, color ='red')
             axarr[0].annotate('%.3f' % item[0],color='red',
@@ -149,7 +101,7 @@ def draw_two_p_and_d(key_name_1, key_name_2, X_1, X_2, lin_reg_1, lin_reg_2,
     axarr[1].plot(comm_X, [0]*len(comm_X), color='black', label='zero', linewidth=1)
 
     # find cross 0 data points
-    cross_zero_points = calculate_cross_zero(comm_X, y_d_dp_2)
+    cross_zero_points = t_l.calculate_cross_zero(comm_X, y_d_dp_2)
     for index, item in enumerate(cross_zero_points):
         if item[3]=='maximum':
             axarr[1].scatter([item[0],],[item[1],], 30, color='blue')
@@ -196,7 +148,7 @@ def make_polynomial_fitting_tv(tv_list, key_name, t_comps_ratio, degree=10,type=
     # x_x = np.linspace(list(X_col)[0], list(X_col)[-1],len(X_col))
     X = np.array(X_col_list_cms).reshape(len(X_col_list_cms),1)
     y = np.array(y_col_list).reshape(len(y_col_list),1)
-    X_quad = generate_polynomials(X, degree)
+    X_quad = t_l.generate_polynomials(X, degree)
     if type=='linear':
         lin_reg = LinearRegression()
         lin_reg.fit(X_quad, y)
@@ -220,17 +172,17 @@ def analyze_points_and_poly(dict_total, key_names, degree, t_comps_ratio):
 
 
 if __name__ == '__main__':
-    dict_total = p_t.make_total_dict()
+    dict_total = p_p.make_total_dict()
 
     # key_names in order by different types
     key_names_ordered = sorted(dict_total, key=lambda item: item[::-1])
     key_names_ordered_notStable = [key_name for key_name in key_names_ordered if key_name not in l_r.STABLE_VALUES]
 
     degree_now = 100
-    t_comps_ratio = calculate_ratio(a_standard_tv=dict_total[' x (m/s/s).Acceleration.csv'])
+    t_comps_ratio = t_l.calculate_ratio(a_standard_tv=dict_total[' x (m/s/s).Acceleration.csv'])
 
-    analyze_points_and_poly(dict_total, key_names_ordered_notStable, degree_now, t_comps_ratio)
-    exit(0)
+    # analyze_points_and_poly(dict_total, key_names_ordered_notStable, degree_now, t_comps_ratio)
+    # exit(0)
 
     count = 0
     # analysis of two data polys and derivatives
@@ -248,10 +200,10 @@ if __name__ == '__main__':
                 coef_2 = lin_reg_2.coef_
 
                 # Derivative of this function
-                coef_d_1 = my_derivative_poly(coef_1)
-                X_quad_d_1 = generate_polynomials(X_1, degree_now-1)
-                coef_d_2 = my_derivative_poly(coef_2)
-                X_quad_d_2 = generate_polynomials(X_2, degree_now-1)
+                coef_d_1 = t_l.my_derivative_poly(coef_1)
+                X_quad_d_1 = t_l.generate_polynomials(X_1, degree_now-1)
+                coef_d_2 = t_l.my_derivative_poly(coef_2)
+                X_quad_d_2 = t_l.generate_polynomials(X_2, degree_now-1)
 
                 print_poly_props(key_name_1, lin_reg_1, X_quad_1, y_1)
                 print_derivative_props(key_name_1, coef_d_1)
@@ -261,14 +213,3 @@ if __name__ == '__main__':
                 draw_two_p_and_d(key_name_1, key_name_2, X_1, X_2, lin_reg_1, lin_reg_2,
                                  coef_d_1, coef_d_2, degree_now, count, t_comps_ratio)
                 count += 1
-
-
-
-#
-# About seaborn(not used)
-# import seaborn as sns
-# test_data = pd.DataFrame([[1, 1], [2, 4], [3, 9], [10, 100], [6, 36], [23, 529]], columns=['x', 'y'])
-# sns.lmplot(x='x', y='y', data=test_data, order=2, ci=None, scatter_kws={"s": 80}, size=8, aspect=1.5)
-# sns.lmplot(x='time', y=key_name, data=df_tv, order=2, ci=None, scatter_kws={"s": 30}, size=8, aspect=1.5)
-# sns.plt.show()
-# exit(0)

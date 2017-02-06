@@ -4,15 +4,12 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn import linear_model
 import numpy as np
 from scipy.ndimage import filters
-import pre_treat as p_t
+import pre_process as p_p
 import linear_regression as l_r
 import polynomial_regression as p_r
 from my_regression import PolynomialRegressionInterval
 import util as t_l
 
-
-# stable values
-MAY_CORRELATION_NUM = 0
 
 def make_plf_cols(tv_list, key_name, t_comps_ratio, degree, GaussFiltered=True, GF_s=8):
 
@@ -36,7 +33,7 @@ def make_plf_cols(tv_list, key_name, t_comps_ratio, degree, GaussFiltered=True, 
     # x_x = np.linspace(list(X_col)[0], list(X_col)[-1],len(X_col))
     X = np.array(X_col_list_cms).reshape(len(X_col_list_cms),1)
     y = np.array(y_col_list).reshape(len(y_col_list),1)
-    X_quad = p_r.generate_polynomials(X, degree)
+    X_quad = t_l.generate_polynomials(X, degree)
     if GaussFiltered:
         y_list = [item[0] for item in y]
         y_GF = filters.gaussian_filter1d(y_list,GF_s)
@@ -45,42 +42,18 @@ def make_plf_cols(tv_list, key_name, t_comps_ratio, degree, GaussFiltered=True, 
         return (X, X_quad, y)
 
 def draw_two_p_and_d_interval_commX(key_name_1, key_name_2, X_1, X_2, y_1, y_2,
-                              reg_func_interval_1, reg_func_interval_2, degree, count, include_transform=False):
+                              reg_func_interval_1, reg_func_interval_2, degree, count):
     # find comm_x for picture
     comm_left = X_1[0] if X_1[0]>X_2[0] else X_2[0]
     comm_right = X_1[-1] if X_1[-1]<X_2[-1] else X_2[-1]
     comm_X = np.linspace(comm_left,comm_right,3000)
     comm_X = comm_X.reshape(comm_X.shape[0], 1)
-    if not include_transform:
-        comm_X_quad = p_r.generate_polynomials(comm_X, degree)
-        comm_X_quad_d = p_r.generate_polynomials(comm_X, degree-1)
-        y_1_func = reg_func_interval_1.predict(comm_X_quad)
-        y_2_func = reg_func_interval_2.predict(comm_X_quad)
-        y_d_dp_1 = reg_func_interval_1.predict_d(comm_X_quad_d)
-        y_d_dp_2 = reg_func_interval_2.predict_d(comm_X_quad_d)
-    else:
-        if key_name_1 == ' RBR Pressure.Depth.csv' and key_name_2.endswith('Distance.csv'):
-            comm_X_quad_1 = p_r.generate_polynomials(t_l.transform_func_for_X(comm_X), degree)
-            comm_X_quad_d_1 = p_r.generate_polynomials(t_l.transform_func_for_X(comm_X), degree-1)
-        if key_name_2 == ' RBR Pressure.Depth.csv' and key_name_1.endswith('Distance.csv'):
-            comm_X_quad_2 = p_r.generate_polynomials(t_l.transform_func_for_X(comm_X), degree)
-            comm_X_quad_d_2 = p_r.generate_polynomials(t_l.transform_func_for_X(comm_X), degree-1)
-        # to judge if the variables are defined
-        try:
-            comm_X_quad_1.all() and comm_X_quad_d_1.all()
-        except NameError:
-            comm_X_quad_1 = p_r.generate_polynomials(comm_X, degree)
-            comm_X_quad_d_1 = p_r.generate_polynomials(comm_X, degree-1)
-        try:
-            comm_X_quad_2.all() and comm_X_quad_d_2.all()
-        except NameError:
-            comm_X_quad_2 = p_r.generate_polynomials(comm_X, degree)
-            comm_X_quad_d_2 = p_r.generate_polynomials(comm_X, degree-1)
-
-        y_1_func = reg_func_interval_1.predict(comm_X_quad_1)
-        y_2_func = reg_func_interval_2.predict(comm_X_quad_2)
-        y_d_dp_1 = reg_func_interval_1.predict_d(comm_X_quad_d_1)
-        y_d_dp_2 = reg_func_interval_2.predict_d(comm_X_quad_d_2)
+    comm_X_quad = t_l.generate_polynomials(comm_X, degree)
+    comm_X_quad_d = t_l.generate_polynomials(comm_X, degree-1)
+    y_1_func = reg_func_interval_1.predict(comm_X_quad)
+    y_2_func = reg_func_interval_2.predict(comm_X_quad)
+    y_d_dp_1 = reg_func_interval_1.predict_d(comm_X_quad_d)
+    y_d_dp_2 = reg_func_interval_2.predict_d(comm_X_quad_d)
 
     # display pearson
     y_1_2_pearson_c_s = t_l.pearson_correlation_similarity(y_1_func, y_2_func)
@@ -129,7 +102,7 @@ def draw_two_p_and_d_interval_commX(key_name_1, key_name_2, X_1, X_2, y_1, y_2,
 
 def draw_points_and_poly_interval(key_name, X, y, reg_func_interval, degree, count):
     import matplotlib.pyplot as plt
-    X_quad = p_r.generate_polynomials(X, degree)
+    X_quad = t_l.generate_polynomials(X, degree)
     interval_values = [*map(lambda a:a[1], reg_func_interval.interval_values_quad_)]
     plt.figure(figsize=(16,9))
     plt.title(key_name[:-1-key_name[::-1].find('.')] + '\'s Interval Regression')
@@ -162,8 +135,8 @@ def draw_d_and_d_interval(key_name_1, key_name_2, X_1, X_2, reg_func_d_interval_
     # do some change
     comm_X = np.linspace(comm_left,comm_right,5000)
     comm_X = comm_X.reshape(comm_X.shape[0], 1)
-    comm_X_quad = p_r.generate_polynomials(comm_X, degree)
-    comm_X_quad_d = p_r.generate_polynomials(comm_X, degree-1)
+    comm_X_quad = t_l.generate_polynomials(comm_X, degree)
+    comm_X_quad_d = t_l.generate_polynomials(comm_X, degree-1)
 
     # find extremum(use the derivative way)
     dp_num_1 = 10
@@ -206,9 +179,6 @@ def draw_d_and_d_interval(key_name_1, key_name_2, X_1, X_2, reg_func_d_interval_
         f.write('\n')
     """
 
-    global MAY_CORRELATION_NUM
-    MAY_CORRELATION_NUM += 1
-
     import matplotlib.pyplot as plt
     fig, axarr = plt.subplots(2, sharex=True, figsize=(16,9))
     # fig.tight_layout()
@@ -217,7 +187,7 @@ def draw_d_and_d_interval(key_name_1, key_name_2, X_1, X_2, reg_func_d_interval_
     if draw_type=='pd':
         X_cross_zero_list_1 = [*map(lambda a:a[0], cross_zero_points_1)]
         X_cross_zero = np.array(X_cross_zero_list_1).reshape(len(X_cross_zero_list_1), 1)
-        X_quad_cross_zero = p_r.generate_polynomials(X_cross_zero,degree)
+        X_quad_cross_zero = t_l.generate_polynomials(X_cross_zero,degree)
         # TODO cause long time
         y_cross_zero = reg_func_d_interval_1.predict(X_quad_cross_zero)
         extremum_points_by_d = [(item_for_X[0],item_for_y,item_for_X[3],item_for_X[4]) for item_for_X, item_for_y in zip(cross_zero_points_1, y_cross_zero)]
@@ -236,7 +206,7 @@ def draw_d_and_d_interval(key_name_1, key_name_2, X_1, X_2, reg_func_d_interval_
 
         """
         # find extremum
-        extremum_points = t_l.calculate_extremum(comm_X, y_dp_1)
+        extremum_points = t_l.calculate_extreme(comm_X, y_dp_1)
         for index, item in enumerate(extremum_points):
             if item[2]=='maximum':
                 axarr[0].scatter([item[0],],[item[1],], 30, color ='red')
@@ -384,7 +354,6 @@ def draw_d_and_d_interval(key_name_1, key_name_2, X_1, X_2, reg_func_d_interval_
             has_draw_minimum_2 = True
     axarr[1].legend(loc='lower right')
     plt.show()
-    # plt.savefig('candidate_comparison_of_derivatives_' + str(MAY_CORRELATION_NUM) + '.png', dpi=150)
 
 def draw_two_p_and_d_interval(key_name_1, key_name_2, X_1, X_2, y_1, y_2,
                               reg_func_interval_1, reg_func_interval_2, count,
@@ -423,12 +392,12 @@ def draw_two_p_and_d_interval(key_name_1, key_name_2, X_1, X_2, y_1, y_2,
 
 
 
-    X_quad_1 = p_r.generate_polynomials(X_1, degree)
+    X_quad_1 = t_l.generate_polynomials(X_1, degree)
     X_1_left, X_1_right = (X_1[0], X_1[-1])
-    X_quad_1_d = p_r.generate_polynomials(X_1, degree-1)
-    X_quad_2 = p_r.generate_polynomials(X_2, degree)
+    X_quad_1_d = t_l.generate_polynomials(X_1, degree-1)
+    X_quad_2 = t_l.generate_polynomials(X_2, degree)
     X_2_left, X_2_right = (X_2[0], X_2[-1])
-    X_quad_2_d = p_r.generate_polynomials(X_2, degree-1)
+    X_quad_2_d = t_l.generate_polynomials(X_2, degree-1)
     y_1_func = reg_func_interval_1.predict(X_quad_1)
     y_1_range = np.amax(y_1_func) - np.amin(y_1_func)
     y_1_max, y_1_min = (np.amax(y_1_func)+0.08*y_1_range, np.amin(y_1_func)-0.08*y_1_range)
@@ -505,7 +474,7 @@ def draw_two_p_and_d_interval(key_name_1, key_name_2, X_1, X_2, y_1, y_2,
 
 
 if __name__ == '__main__':
-    dict_total = p_t.make_total_dict()
+    dict_total = p_p.make_total_dict()
 
     # key_names in order by different types
     key_names_ordered = sorted(dict_total, key=lambda item: item[::-1])
@@ -515,7 +484,7 @@ if __name__ == '__main__':
     key_names_ordered_DDValues = [key_name for key_name in key_names_ordered if key_name in l_r.DD_VALUES]
 
     degree_now = 6
-    t_comps_ratio = p_r.calculate_ratio(a_standard_tv=dict_total[' x (m/s/s).Acceleration.csv'])
+    t_comps_ratio = t_l.calculate_ratio(a_standard_tv=dict_total[' x (m/s/s).Acceleration.csv'])
     # calculate a dictionary of key_name and its interval function
     dict_funcs = dict()
     for key_name in key_names_ordered_notStable:
@@ -524,27 +493,20 @@ if __name__ == '__main__':
         plf_interval = PolynomialRegressionInterval()
         # for debug
         # print('r2 for ' + key_name)
-        plf_interval.fit(X_quad, y, reg_type='linear',mixed_mode=True)
+        plf_interval.fit(X_quad, y)
         plf_interval.calculate_derivatives()
         dict_funcs[key_name] = (X, y, plf_interval)
 
     # analyze the interval regression
-    # count = 0
-    # for key_name in key_names_ordered_notStable:
-    #     if key_name.endswith('Distance.csv') or key_name.endswith('Depth.csv'):
-    #         X, y, plf_interval = dict_funcs[key_name]
-    #         #
-    #         # for test(should be deleted)
-    #         #
-    #         # print(len(plf_interval.intervals_))
-    #         # print(len([*map(lambda a:a[1], plf_interval.interval_values_quad_)]))
-    #         #
-    #         #
-    #         draw_points_and_poly_interval(key_name, X, y, plf_interval, degree_now, count)
-    #         count += 1
-    # exit(0)
+    count = 0
+    for key_name in key_names_ordered_notStable:
+        if key_name.endswith('Distance.csv') or key_name.endswith('Depth.csv'):
+            X, y, plf_interval = dict_funcs[key_name]
+            draw_points_and_poly_interval(key_name, X, y, plf_interval, degree_now, count)
+            count += 1
+    exit(0)
 
-    # analyze the value pairs
+    # analyze value pairs
     count = 0
     for index_2, key_name_2 in  enumerate(key_names_ordered_notStable):
         for key_name_1 in key_names_ordered_notStable[index_2:]:
@@ -565,6 +527,6 @@ if __name__ == '__main__':
                 # count += 1
                 if draw_two_p_and_d_interval_commX(key_name_1, key_name_2, X_1, X_2,
                                                 y_1, y_2, plf_interval_1, plf_interval_2,
-                                                degree_now, count, include_transform=False) != 1:
+                                                degree_now, count) != 1:
                     count += 1
     print(count)

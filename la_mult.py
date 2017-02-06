@@ -5,11 +5,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-import src.linear_fit as l_f
-import src.linear_analysis as l_a
+import linear_analysis as l_a
 
 
-FILE_PATH = './mult_dm/'
+FILE_PATH = '/Users/ForeverQ/Programming/svn/hengqian/src/datas/data_1/mult_dm/'
 # FILE_PATH = './'
 
 def func_float(a_list):
