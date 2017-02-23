@@ -32,7 +32,7 @@ class PolynomialRegressionInterval(object):
             rsq_threshold_linear=RSQ_THRESHOLD_LINEAR,  mixed_mode=MIXED_MODE_STATUS):
         """Fits the data points and creates different intervals.
 
-        Creates intervals by Dichotomy with the threshold of r^2.
+        Creates intervals by Dichotomy with the threshold of R^2.
         Mixes both the linear regression and polynomial regression.
 
         Args:
@@ -81,12 +81,12 @@ class PolynomialRegressionInterval(object):
                     self.linear_reg_funcs_.append((reg_func_linear,'linear'))
 
                     # for debug
-                    # print('linear_r2: ' + str(r_square_linear))
+                    print('linear_r2: ' + str(r_square_linear))
                 else:
                     self.linear_reg_funcs_.append((reg_func_poly,'poly'))
 
                     # for debug
-                    # print('poly_r2: ' + str(r_square_poly))
+                    print('poly_r2: ' + str(r_square_poly))
                 sub_start = sub_end
                 sub_end = min(sub_start+interval_unit_num, len(self.X_quad_when_fitting))
             else:

@@ -30,7 +30,7 @@ def print_poly_props(name, lin_reg, X_quad, y):
     print('Poly of ' + name + ':')
     print(lin_reg.coef_)
     print(lin_reg.intercept_)
-    print('r^2: ' + str(lin_reg.score(X_quad, y)))
+    print('R^2: ' + str(lin_reg.score(X_quad, y)))
     print()
 
 def make_polynomial_fitting_tv(tv_list, key_name, t_comps_ratio, degree=DEGREE_NOW,type='linear'):
